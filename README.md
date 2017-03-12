@@ -3,6 +3,8 @@ Gilded Rose Kata
 
 Gilded Rose kata solution in csharp.
 
+[![Build Status](https://api.travis-ci.org/jrgcubano/GildedRose.svg?branch=master)](https://travis-ci.org/jrgcubano/GildedRose)
+
 ## Used Stuff
 * [NET Core](https://github.com/dotnet/core)
 * Tests
