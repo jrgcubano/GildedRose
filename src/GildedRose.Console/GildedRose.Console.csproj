@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Build">    
+    <NeutralLanguage>en-US</NeutralLanguage>    
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>  
+    <AssemblyName>GildedRose.Console</AssemblyName>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+  </PropertyGroup>
+
+   <PropertyGroup Label="Package">
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>Jorge Rodríguez Galán</Authors>
+    <Product>GildedRose Kata</Product>
+    <PackageId>GildedRose.Console</PackageId>
+    <Description>GildedRose kata with NET Core</Description>    
+    <Copyright>Copyright © Jorge Rodríguez Galán. All rights Reserved</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GildedRose\GildedRose.csproj" />
+  </ItemGroup>
+  
+</Project>
