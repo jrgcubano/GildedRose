@@ -127,7 +127,7 @@ Task("Package")
         {
             versionSuffix = preReleaseSuffix + "-" + buildNumber.ToString("D4");
         }
-        var srcProjects = GetFiles("./src/**/*.csproj");
+        var srcProjects = GetFiles("./src/GildedRose/*.csproj");
         foreach (var project in srcProjects)
         {
             DotNetCorePack(
