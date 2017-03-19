@@ -10,16 +10,18 @@ WIX!
 | Name      | Operating System | Status |
 | :---      | :---             | :---   |
 | AppVeyor  | Windows          | [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/aknwu9sil3dv3im0?svg=true)](https://ci.appveyor.com/project/jrgcubano/gildedrose) |
-| Travis CI | Linux & Mac      | [![Travis build status](https://img.shields.io/travis/jrgcubano/GildedRose.svg?maxAge=3600&label=travis)](https://travis-ci.org/jrgcubano/GildedRose) |
+| Travis CI | Linux & Mac      | [![Travis build status](https://img.shields.io/travis/jrgcubano/GildedRose.svg?label=travis)](https://travis-ci.org/jrgcubano/GildedRose) |
 
 ## NuGet Packages
 
 | Name | .NET Version | NuGet |
-| :--- | :--- | :---  | :---  |
-| [GildedRose](https://www.nuget.org/packages/GiledRose/) | NET Core | [![GildedRose NuGet Package](https://img.shields.io/nuget/v/GildedRose.svg)](https://www.nuget.org/packages/GiledRose/)
+| :--- | :--- | :---  |
+| [GildedRose](https://www.nuget.org/packages/GildedRose/) | NET Core | [![GildedRose NuGet Package](https://img.shields.io/nuget/v/GildedRose.svg)](https://www.nuget.org/packages/GildedRose/)
 
 ## Used Stuff
-* [NET Core](https://github.com/dotnet/core)
+
+* Platform
+   * [NET Core](https://github.com/dotnet/core)
 * Tests
    * [xUnit](https://github.com/xunit/xunit)
    * [FluentAssertions](https://github.com/fluentassertions/fluentassertions)
@@ -30,9 +32,12 @@ WIX!
 * CI/CD
    * [AppVeyor](https://www.appveyor.com/) (Windows) 
    * [Travis](travis-ci.org) (Linux, OSX)
-* Deploy
+* Deployed to
    * [NuGet](https://www.nuget.org/)
-   * [MyGet](https://www.nuget.org/)
+   * [MyGet](http://www.myget.org/)
+* Git and GitHub tools
+   * [Commitizen](https://github.com/commitizen/cz-cli) (git commit style)
+   * [Hub](https://github.com/github/hub) (github pull-requests, ci status, releases, etc)
 
 ## Kata Instructions
 1. Clone your selected language starter from [Starters](https://github.com/emilybache/GildedRose-Refactoring-Kata). To clone just the subfolder with your language of choice: 
