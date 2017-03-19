@@ -1,7 +1,9 @@
 Gilded Rose Kata
 =========================
 
-Gilded Rose kata solution in csharp.
+Gilded Rose kata solution in csharp. A complete example to develop a library with NET Core, test it and deploy it as a package using differents cis.
+
+WIX!
 
 ## Continuous Integration
 
@@ -10,16 +12,27 @@ Gilded Rose kata solution in csharp.
 | AppVeyor  | Windows          | [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/aknwu9sil3dv3im0?svg=true)](https://ci.appveyor.com/project/jrgcubano/gildedrose) |
 | Travis CI | Linux & Mac      | [![Travis build status](https://img.shields.io/travis/jrgcubano/GildedRose.svg?maxAge=3600&label=travis)](https://travis-ci.org/jrgcubano/GildedRose) |
 
+## NuGet Packages
+
+| Name | .NET Version | NuGet |
+| :--- | :--- | :---  | :---  |
+| [GildedRose](https://www.nuget.org/packages/GiledRose/) | NET Core | [![GildedRose NuGet Package](https://img.shields.io/nuget/v/GildedRose.svg)](https://www.nuget.org/packages/GiledRose/)
+
 ## Used Stuff
 * [NET Core](https://github.com/dotnet/core)
 * Tests
    * [xUnit](https://github.com/xunit/xunit)
    * [FluentAssertions](https://github.com/fluentassertions/fluentassertions)
+* Tests Coverage
+   * [OpenCover](https://github.com/OpenCover/opencover)
 * Build Automation
    * [Cake](https://github.com/cake-build/cake)
 * CI/CD
    * [AppVeyor](https://www.appveyor.com/) (Windows) 
    * [Travis](travis-ci.org) (Linux, OSX)
+* Deploy
+   * [NuGet](https://www.nuget.org/)
+   * [MyGet](https://www.nuget.org/)
 
 ## Kata Instructions
 1. Clone your selected language starter from [Starters](https://github.com/emilybache/GildedRose-Refactoring-Kata). To clone just the subfolder with your language of choice: 

@@ -1,14 +1,16 @@
 #addin "Cake.FileHelpers"
-#addin "Cake.Coveralls"
+#addin "nuget:?package=Cake.Coveralls"
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=ReportGenerator"
-#tool coveralls.io
+#tool "nuget:?package=xunit.runner.console"
+#tool "nuget:?package=coveralls.io"
 
 var target = Argument<string>("target", "Default");
 
-var githubApiKey = Argument<string>("githubApiKey", "");
-var coverallsApiKey = Argument<string>("coverallsApiKey", "");
-var nugetApiKey = Argument("nugetApiKey", "");
+var	isTagged = (
+	BuildSystem.AppVeyor.Environment.Repository.Tag.IsTag &&
+	!string.IsNullOrWhiteSpace(BuildSystem.AppVeyor.Environment.Repository.Tag.Name)
+);
 
 var configuration =
     HasArgument("Configuration") ? Argument<string>("Configuration") :
@@ -16,7 +18,7 @@ var configuration =
     "Release";
 var preReleaseSuffix =
     HasArgument("PreReleaseSuffix") ? Argument<string>("PreReleaseSuffix") :
-    (AppVeyor.IsRunningOnAppVeyor && AppVeyor.Environment.Repository.Tag.IsTag) ? null :
+    isTagged ? null :
     EnvironmentVariable("PreReleaseSuffix") != null ? EnvironmentVariable("PreReleaseSuffix") :
     "beta";
 var buildNumber =
@@ -26,30 +28,46 @@ var buildNumber =
     EnvironmentVariable("BuildNumber") != null ? int.Parse(EnvironmentVariable("BuildNumber")) :
     0;
 
- var restoreSources = new [] {
+var isLocalBuild = BuildSystem.IsLocalBuild;
+var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
+var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
+
+var nugetApiKey =
+    HasArgument("nugetApiKey") ? Argument<string>("nugetApiKey") : EnvironmentVariable("NUGET_API_KEY");
+var githubApiKey = EnvironmentVariable("GITHUB_API_KEY");
+var coverallsApiKey = EnvironmentVariable("COVERALLS_API_KEY");
+
+var testCoverageFilter = "+[GildedRose]* -[GildedRose.Console]*";
+var testCoverageExcludeByAttribute = "*.ExcludeFromCodeCoverage*";
+var testCoverageExcludeByFile = "*/*Designer.cs;*/*AssemblyInfo.cs";
+var restoreSources = new [] {
      "https://www.myget.org/F/xunit/api/v3/index.json",
      "https://dotnet.myget.org/F/dotnet-core/api/v3/index.json",
      "https://dotnet.myget.org/F/cli-deps/api/v3/index.json",
      "https://api.nuget.org/v3/index.json"
 };
-
 var githubOwner = "jrgcubano";
 var githubRepo = "GildedRose";
 var githubRawUri = "http://raw.githubusercontent.com";
-var output = Directory("build");
-var publish = Directory("publish");
-var release = Directory("release");
-var outputNuGet = output + Directory("nuget");
-var coverageAssemblies = new[] { "GildedRose" };
+
+var outputDir = Directory("./build");
+var nugetDir = outputDir + Directory("nuget");
+var testResultsDir = outputDir + Directory("test-results");
+var coverageFilePath = testResultsDir + File("coverage.xml");
 
 Task("Clean")
 	.Does(() => 
     {        
-        CleanDirectories(output);
-        CleanDirectories(publish);
-        CleanDirectories(release);
+        CleanDirectories(outputDir);
         DeleteDirectories(GetDirectories("**/bin"), true);
         DeleteDirectories(GetDirectories("**/obj"), true);
+
+        if(!DirectoryExists(outputDir))
+            CreateDirectory(outputDir);
+        if(!DirectoryExists(testResultsDir))
+            CreateDirectory(testResultsDir);        
+        if(!DirectoryExists(nugetDir))
+            CreateDirectory(nugetDir);    
 	});
 
 
@@ -92,7 +110,7 @@ Task("Restore")
             DotNetCoreBuild(
                 project.GetDirectory().FullPath,
                 new DotNetCoreBuildSettings()
-                {                
+                {          
                     Configuration = configuration
                 });
         }           
@@ -101,25 +119,72 @@ Task("Restore")
 Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
-    {
-        var testProjects = GetFiles("./test/**/*.csproj");
-        foreach(var project in testProjects)
+    {        
+        var projects = GetFiles("./test/**/*.csproj");
+        foreach(var project in projects)
         {
+            // var testXmlPath = testResultsDir.Path.CombineWithFilePath(project.GetFilenameWithoutExtension()).FullPath + ".trx";                    
+            var testXmlPathAbs = MakeAbsolute(testResultsDir)
+                .CombineWithFilePath(
+                    project.GetFilenameWithoutExtension()).FullPath + ".trx";
+            Information("File Abs: " + testXmlPathAbs);
             DotNetCoreTest(
                 project.ToString(),
                 new DotNetCoreTestSettings()
                 {
-                    //ArgumentCustomization = args => args
-                    //    .Append("-xml")
-                    //    .Append(artifactsDirectory.Path.CombineWithFilePath(project.GetFilenameWithoutExtension()).FullPath + ".xml"),
+                    // ArgumentCustomization = args => args.Append("-xml").Append(testXmlPath),
+                    // ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + testXmlPathAbs + "\""),
                     Configuration = configuration,
-                    NoBuild = true
+                    NoBuild = true                    
                 });
-        }
+        } 
     });
 
+Task("Test-Coverage")
+	.IsDependentOn("Build")
+	.Does(() =>
+{    
+    var projects = GetFiles("./test/**/*.csproj");
+    foreach(var project in projects)
+    {
+        var testXmlPathAbs = MakeAbsolute(testResultsDir)
+                .CombineWithFilePath(
+                    project.GetFilenameWithoutExtension()).FullPath + ".trx";    
+        Action<ICakeContext> testAction = tool => tool.DotNetCoreTest(
+            project.ToString(), new DotNetCoreTestSettings {
+                NoBuild = true,
+                Verbose = false,
+                Configuration = configuration,
+                ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=" + testXmlPathAbs + "\"")
+            }
+        );    
+        OpenCover(testAction,
+            coverageFilePath,
+            new OpenCoverSettings {
+                ReturnTargetCodeOffset = 0,
+                ArgumentCustomization = args => args.Append("-mergeoutput -oldStyle")
+            }
+            .WithFilter(testCoverageFilter)
+            .ExcludeByAttribute(testCoverageExcludeByAttribute)
+            .ExcludeByFile(testCoverageExcludeByFile));
+    }
+});
+
+Task("Upload-Coverage-Report")
+    .WithCriteria(() => FileExists(coverageFilePath))
+    .WithCriteria(() => !isLocalBuild)
+    .WithCriteria(() => !isPullRequest)
+    .IsDependentOn("Test-Coverage")
+    .Does(() =>
+{
+    CoverallsIo(coverageFilePath, new CoverallsIoSettings()
+    {
+        RepoToken = coverallsApiKey
+    });
+});
+
 Task("Package")
-    .IsDependentOn("Test")
+    .IsDependentOn("Build")
     .Does(() => 
     {
         string versionSuffix = null;
@@ -135,23 +200,35 @@ Task("Package")
                 new DotNetCorePackSettings()
                 {
                     Configuration = configuration,
-                    OutputDirectory = outputNuGet,
-                    VersionSuffix = versionSuffix
+                    OutputDirectory = nugetDir,
+                    VersionSuffix = versionSuffix,
+                    NoBuild = true,
+                    Verbose = false		            
                 });
         }
     });
 
-Task("PushPackage")
+Task("Publish-Package")
+    .WithCriteria(() => !isLocalBuild)
+    .WithCriteria(() => !isPullRequest)
+    .WithCriteria(() => isTagged)
     .IsDependentOn("Package")
     .Does(() =>
 {
-    var packages = GetFiles(outputNuGet.Path.FullPath + "/*.nupkg");
+    var packages = GetFiles(nugetDir.Path.FullPath + "/*.nupkg");
     NuGetPush(packages, new NuGetPushSettings {
-        Source = "https://nuget.org/",
-        ApiKey = nugetApiKey,        
+        Source = "https://www.nuget.org/api/v2/package",
+        ApiKey = nugetApiKey 
     });
 });
-    
+
+Task("DefaultCI")
+    //.IsDependentOn("Test-Coverage")
+    //.IsDependentOn("Upload-Coverage-Report")
+    .IsDependentOn("Test")
+    .IsDependentOn("Package")
+    .IsDependentOn("Publish-Package");
+
 Task("Default") 
     .IsDependentOn("Package");
 
