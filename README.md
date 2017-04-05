@@ -3,7 +3,7 @@ Gilded Rose Kata
 
 Gilded Rose kata solution in csharp. A complete example to develop a library with NET Core, test it and deploy it as a package using differents cis.
 
-WIX!
+WIP!
 
 ## Continuous Integration
 
@@ -22,17 +22,23 @@ WIX!
 
 * Platform
    * [NET Core](https://github.com/dotnet/core)
+* Code Editor
+   * [Visual studio code](https://code.visualstudio.com/) (.vscode directory)
+* Code style
+   * [Editor config](http://editorconfig.org/)   
 * Tests
    * [xUnit](https://github.com/xunit/xunit)
    * [FluentAssertions](https://github.com/fluentassertions/fluentassertions)
 * Tests Coverage
    * [OpenCover](https://github.com/OpenCover/opencover)
+* Code analyzer
+   * [StyleCop Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)
 * Build Automation
    * [Cake](https://github.com/cake-build/cake)
 * CI/CD
    * [AppVeyor](https://www.appveyor.com/) (Windows) 
    * [Travis](travis-ci.org) (Linux, OSX)
-* Deployed to
+* Deployed as package to
    * [NuGet](https://www.nuget.org/)
    * [MyGet](http://www.myget.org/)
 * Git and GitHub tools
